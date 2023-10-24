@@ -1,0 +1,35 @@
+#!/bin/busybox sh
+
+# initrd, only busybox and /init
+BB=/bin/busybox
+
+# (1) Print something and exit
+$BB echo -e "\033[31mHello, OS World\033[0m"
+# $BB poweroff -f
+
+# (2) Run a shell on the init console
+# $BB sh
+
+# (3) Rock'n Roll!
+for cmd in $($BB --list); do
+  $BB ln -s $BB /bin/$cmd
+done
+mkdir -p /tmp
+mkdir -p /mnt
+mkdir -p /mnt/root
+mkdir -p /proc && mount -t proc  none /proc
+mkdir -p /sys  && mount -t sysfs none /sys
+
+
+$BB echo -e "\033[31mHello, Real OS World\033[0m"
+mdev -s
+
+root="/dev/sda"
+mount -o rw $root /mnt/root
+
+mknod /mnt/root/dev/console c 4 1
+
+exec switch_root /mnt/root /linuxrc
+
+# mknod /dev/tty c 4 1
+# setsid /bin/sh </dev/tty >/dev/tty 2>&1

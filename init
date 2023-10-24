@@ -1,0 +1,26 @@
+#!/bin/busybox sh
+
+# initrd, only busybox and /init
+BB=/bin/busybox
+
+# (1) Print something and exit
+$BB echo -e "\033[31mHello, OS World\033[0m"
+# $BB poweroff -f
+
+# (2) Run a shell on the init console
+# $BB sh
+
+# (3) Rock'n Roll!
+for cmd in $($BB --list); do
+  $BB ln -s $BB /bin/$cmd
+done
+mkdir -p /tmp
+mkdir -p /proc && mount -t proc  none /proc
+mkdir -p /sys  && mount -t sysfs none /sys
+
+# Load necessary kernel modules
+modprobe ahci
+modprobe ext4
+
+mknod /dev/tty c 4 1
+setsid /bin/sh </dev/tty >/dev/tty 2>&1
